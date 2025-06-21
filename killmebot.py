@@ -49,17 +49,13 @@ async def start_command(client, message: Message):
 @bot.on_message(filters.private & filters.command("help"))
 async def help_command(client, message: Message):
     await message.reply(
-        "📌 *Kill Me Bot Help:*
-"
-        "- Removes unwanted @mentions (except @movie_talk_backup)
-"
-        "- Removes .com, http links from messages
-"
-        "- Adds auto captions to media files
-"
-        "- Works with text, videos, docs, photos
-"
-        "- Waits 5 seconds for media cleanup",
+        """📌 *Kill Me Bot Help:*
+- Removes unwanted @mentions (except @movie_talk_backup)
+- Removes .com, http links from messages
+- Adds auto captions to media files
+- Works with text, videos, docs, photos
+- Waits 5 seconds for media cleanup
+""",
         quote=True,
         parse_mode="Markdown"
     )
@@ -99,6 +95,8 @@ async def clean_media_caption(client, message: Message):
             try:
                 await message.copy(chat_id=message.chat.id, caption=cleaned)
                 await message.delete()
-                log("Media caption clean failed: {e}")
+                log("Media caption cleaned.")
+            except Exception as e:
+                log(f"Caption clean failed: {e}")
 
 bot.run()
