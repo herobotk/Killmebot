@@ -83,9 +83,20 @@ async def start_cmd(_, message: Message):
 
 @bot.on_message(filters.private & filters.command("help"))
 async def help_cmd(_, message: Message):
-    await message.reply(
-        """📌 **Kill Me Bot Help Guide:**
-
+    await message.reply_text(
+        "**📌 Kill Me Bot Help Guide:**\n\n"
+        "🧹 *Mention Cleaner*\n"
+        "- Removes: `@mention`, `t.me/`, `.com`, etc.\n"
+        "- Keeps only `@movie_talk_backup`\n\n"
+        "🎬 *Auto Caption*\n"
+        "- Works with: Video, Document, Audio, Photo\n"
+        "- Adds caption like: JW23.1080p.mkv\n\n"
+        "⚡ *Auto Repost + FloodWait Handling*\n\n"
+        "🔎 Works only in Channels. DM me for help.\n\n"
+        "🔗 Bot by @movie_talk_backup",
+        parse_mode="Markdown"
+    )
+    
 🧹 *Mention Cleaner*  
 - Removes: `@mention`, `t.me/`, `.com`, etc.  
 - Keeps only `@movie_talk_backup`
