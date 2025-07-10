@@ -37,16 +37,27 @@ def shorten_title(filename):
         # Add more as needed
     }
 
-    # Extract base title (before year/season or resolution keywords)
-    base = filename.split('.')[0]
-    parts = re.split(r'[\s._-]+', base)
-
-    # Check title_map first
+    # Check for known title
     for full, short in title_map.items():
-        if full.lower() in filename.lower():
-            filename = re.sub(fr'\b{re.escape(full)}\b', short, filename, flags=re.IGNORECASE)
-            return filename
+        if re.search(fr'\b{re.escape(full)}\b', filename, flags=re.IGNORECASE):
+            return re.sub(fr'\b{re.escape(full)}\b', short, filename, flags=re.IGNORECASE)
 
+    # Auto-generate initials + year
+    match = re.search(r'^(.+?)(?:[\s._-]+(?:19|20)\d{2}|[\s._-]+S\d+E\d+)', filename, flags=re.IGNORECASE)
+    if match:
+        title_part = match.group(1)
+        words = re.split(r'[\s._-]+', title_part)
+        initials = ''.join(w[0].upper() for w in words if w and w[0].isalpha())
+
+        # Add year if found
+        year_match = re.search(r'(19|20)\d{2}', filename)
+        if year_match:
+            initials += year_match.group(0)
+
+        filename = re.sub(r'^(.+?)(?=(?:19|20)\d{2}|S\d+E\d+)', initials, filename, flags=re.IGNORECASE)
+
+    return filename.strip()
+    
     # Auto-generate short form
     initials = ''
     for word in parts:
