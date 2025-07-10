@@ -92,7 +92,7 @@ async def help_cmd(_, message: Message):
         "- Works with: Video, Document, Audio, Photo\n"
         "- Adds caption like: JW23.1080p.mkv\n\n"
         "⚡ *Auto Repost + FloodWait Handling*\n\n"
-        "🔎 Works only in Channels. DM me for help.\n\n"
+        "🔎 *Works only in Channels.* DM me for help.\n\n"
         "🔗 Bot by @movie_talk_backup",
         parse_mode="Markdown"
     )
