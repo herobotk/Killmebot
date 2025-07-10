@@ -34,12 +34,32 @@ def shorten_title(filename):
         "Animal": "ANML23",
         "Fighter": "FGTR24",
         "Gadar": "GDR22",
-        # add more as needed
+        # Add more as needed
     }
-    for full, short in title_map.items():
-        filename = re.sub(fr'\b{re.escape(full)}\b', short, filename, flags=re.IGNORECASE)
-    return filename
 
+    # Extract base title (before year/season or resolution keywords)
+    base = filename.split('.')[0]
+    parts = re.split(r'[\s._-]+', base)
+
+    # Check title_map first
+    for full, short in title_map.items():
+        if full.lower() in filename.lower():
+            filename = re.sub(fr'\b{re.escape(full)}\b', short, filename, flags=re.IGNORECASE)
+            return filename
+
+    # Auto-generate short form
+    initials = ''
+    for word in parts:
+        if word.isalpha():
+            initials += word[0].upper()
+        elif word.isdigit() and len(word) == 4:
+            initials += word  # add year
+            break  # stop after year
+
+    # Replace only beginning title with initials
+    filename = re.sub(r'^.*?(?=\d{4}|\d{3,4}p|S\d+E\d+)', initials, filename, flags=re.IGNORECASE)
+    return filename.strip()
+    
 # ================== Cleaner ==================
 def clean_filename(filename):
     keep_username = "@movie_talk_backup"
