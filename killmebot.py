@@ -26,18 +26,41 @@ def run_http_server():
 
 threading.Thread(target=run_http_server, daemon=True).start()
 
-# ================== Cleaning Logic ==================
+# ================== Title Shortener ==================
+def shorten_title(filename):
+    title_map = {
+        "Jawan": "JW23",
+        "Pathaan": "PTN23",
+        "Animal": "ANML23",
+        "Fighter": "FGTR24",
+        "Gadar": "GDR22",
+        # add more as needed
+    }
+    for full, short in title_map.items():
+        filename = re.sub(fr'\b{re.escape(full)}\b', short, filename, flags=re.IGNORECASE)
+    return filename
+
+# ================== Cleaner ==================
 def clean_filename(filename):
     keep_username = "@movie_talk_backup"
     filename = filename.replace(keep_username, "___KEEP__USERNAME___")
+
+    # Title shortening
+    filename = shorten_title(filename)
+
+    # Remove mentions, links, domains
     filename = re.sub(r'@\w+', '', filename)
     filename = re.sub(r'https?://\S+|www\.\S+|\S+\.(com|in|net|org|me|info)', '', filename)
     filename = re.sub(r't\.me/\S+', '', filename)
-    filename = re.sub(r'[^\w\s.\-()]', '', filename)
+
+    # Remove unwanted characters but keep _ . - ( ) letters and numbers
+    filename = re.sub(r'[^\w\s.\-()_]', '', filename)
     filename = re.sub(r'\s{2,}', ' ', filename).strip()
+
     filename = filename.replace("___KEEP__USERNAME___", keep_username)
     return filename
 
+# ================== Caption Builder ==================
 def generate_caption(file_name, file_size):
     cleaned_name = clean_filename(file_name)
     return f"""{cleaned_name}
@@ -53,7 +76,7 @@ def log(msg):
 # ================== Bot Setup ==================
 bot = Client("kill_me_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-# ================== Commands ==================
+# ================== Commands (PM Only) ==================
 @bot.on_message(filters.private & filters.command("start"))
 async def start_cmd(_, message: Message):
     await message.reply("👋 Bot is alive! Mentions cleaner + auto caption is running.")
@@ -61,12 +84,20 @@ async def start_cmd(_, message: Message):
 @bot.on_message(filters.private & filters.command("help"))
 async def help_cmd(_, message: Message):
     await message.reply(
-        """📌 *Kill Me Bot Help:*
-- Cleans unwanted @mentions, t.me, .com, etc.
-- Keeps only @movie_talk_backup
-- Adds auto caption on media
-- Works with video, document, audio, photo
-- Handles FloodWait & avoids repost loops
+        """📌 **Kill Me Bot Help Guide:**
+
+🧹 *Mention Cleaner*  
+- Removes: `@mention`, `t.me/`, `.com`, etc.  
+- Keeps only `@movie_talk_backup`
+
+🎬 *Auto Caption*  
+- Works with: Video, Document, Audio, Photo  
+- Adds caption like:
+⚡ *Auto repost + FloodWait handling*
+
+🔎 Works only in Channels. DM me for help.
+
+🔗 Bot by @movie_talk_backup
 """,
         parse_mode="Markdown"
     )
