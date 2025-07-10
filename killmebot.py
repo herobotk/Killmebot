@@ -84,11 +84,10 @@ async def start_cmd(_, message: Message):
 @bot.on_message(filters.private & filters.command("help"))
 async def help_cmd(_, message: Message):
     await message.reply_text(
-        "<b>📌 Bot Commands:</b>\n"
+        "📌 Bot Commands:\n"
         "/start – Start the bot\n"
         "/help – Show this help menu\n\n"
-        "📬 Need Help? <a href='http://t.me/Fedbk_rep_bot'>𝐇𝐞𝐥𝐩 𝐨𝐫 𝐑𝐞𝐩𝐨𝐫𝐭 𝐛𝐨𝐭</a>",
-        parse_mode="HTML"
+        "📬 Need Help? Fedbk_rep_bot (http://t.me/Fedbk_rep_bot)"
     )
     
 # ================== Clean text messages ==================
