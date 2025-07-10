@@ -81,7 +81,6 @@ bot = Client("kill_me_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKE
 async def start_cmd(_, message: Message):
     await message.reply("👋 Bot is alive! Mentions cleaner + auto caption is running.")
 
-# ================== Help Command (PM Only) ==================
 @bot.on_message(filters.private & filters.command("help"))
 async def help_cmd(_, message: Message):
     await message.reply_text(
@@ -89,22 +88,6 @@ async def help_cmd(_, message: Message):
         "/start – Start the bot\n"
         "/help – Show this help menu\n\n"
         "📬 Need Help? [𝐇𝐞𝐥𝐩 𝐨𝐫 𝐑𝐞𝐩𝐨𝐫𝐭 𝐛𝐨𝐭](http://t.me/Fedbk_rep_bot)",
-        parse_mode="Markdown"
-    )
-
-🧹 *Mention Cleaner*  
-- Removes: `@mention`, `t.me/`, `.com`, etc.  
-- Keeps only `@movie_talk_backup`
-
-🎬 *Auto Caption*  
-- Works with: Video, Document, Audio, Photo  
-- Adds caption like:
-⚡ *Auto repost + FloodWait handling*
-
-🔎 Works only in Channels. DM me for help.
-
-🔗 Bot by @movie_talk_backup
-""",
         parse_mode="Markdown"
     )
 
