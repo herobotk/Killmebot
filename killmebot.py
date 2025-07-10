@@ -87,7 +87,8 @@ async def help_cmd(_, message: Message):
         "📌 Bot Commands:\n"
         "/start – Start the bot\n"
         "/help – Show this help menu\n\n"
-        "📬 Need Help? Fedbk_rep_bot (http://t.me/Fedbk_rep_bot)"
+        "📬 Need Help? [𝐇𝐞𝐥𝐩 𝐨𝐫 𝐑𝐞𝐩𝐨𝐫𝐭 𝐛𝐨𝐭](http://t.me/Fedbk_rep_bot)",
+        disable_web_page_preview=False
     )
     
 # ================== Clean text messages ==================
