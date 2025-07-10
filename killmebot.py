@@ -26,75 +26,27 @@ def run_http_server():
 
 threading.Thread(target=run_http_server, daemon=True).start()
 
-# ================== Title Shortener ==================
-def shorten_title(filename):
-    title_map = {
-        "Jawan": "JW23",
-        "Pathaan": "PTN23",
-        "Animal": "ANML23",
-        "Fighter": "FGTR24",
-        "Gadar": "GDR22",
-        # Add more as needed
-    }
+# ================== Alphabet Map ==================
+alphabet_map = {
+    'A': '@', 'B': 'B', 'C': '©', 'D': 'Ð', 'E': 'Ɇ', 'F': '₣', 'G': 'Ǥ',
+    'H': '#', 'I': '!', 'J': 'ʝ', 'K': 'Ҝ', 'L': 'Ↄ', 'M': '♏', 'N': '₪',
+    'O': '()', 'P': '₱', 'Q': 'Ǫ', 'R': '®', 'S': '$', 'T': '†', 'U': 'Ü',
+    'V': '√', 'W': 'Ш', 'X': '✘', 'Y': '¥', 'Z': '乙'
+}
 
-    # Check for known title
-    for full, short in title_map.items():
-        if re.search(fr'\b{re.escape(full)}\b', filename, flags=re.IGNORECASE):
-            return re.sub(fr'\b{re.escape(full)}\b', short, filename, flags=re.IGNORECASE)
-
-    # Auto-generate initials + year
-    match = re.search(r'^(.+?)(?:[\s._-]+(?:19|20)\d{2}|[\s._-]+S\d+E\d+)', filename, flags=re.IGNORECASE)
-    if match:
-        title_part = match.group(1)
-        words = re.split(r'[\s._-]+', title_part)
-        initials = ''.join(w[0].upper() for w in words if w and w[0].isalpha())
-
-        # Add year if found
-        year_match = re.search(r'(19|20)\d{2}', filename)
-        if year_match:
-            initials += year_match.group(0)
-
-        filename = re.sub(r'^(.+?)(?=(?:19|20)\d{2}|S\d+E\d+)', initials, filename, flags=re.IGNORECASE)
-
-    return filename.strip()
-    
-    # Auto-generate short form
-    initials = ''
-    for word in parts:
-        if word.isalpha():
-            initials += word[0].upper()
-        elif word.isdigit() and len(word) == 4:
-            initials += word  # add year
-            break  # stop after year
-
-    # Replace only beginning title with initials
-    filename = re.sub(r'^.*?(?=\d{4}|\d{3,4}p|S\d+E\d+)', initials, filename, flags=re.IGNORECASE)
-    return filename.strip()
-    
-# ================== Cleaner ==================
-def clean_filename(filename):
-    keep_username = "@movie_talk_backup"
-    filename = filename.replace(keep_username, "___KEEP__USERNAME___")
-
-    # Title shortening
-    filename = shorten_title(filename)
-
-    # Remove mentions, links, domains
-    filename = re.sub(r'@\w+', '', filename)
-    filename = re.sub(r'https?://\S+|www\.\S+|\S+\.(com|in|net|org|me|info)', '', filename)
-    filename = re.sub(r't\.me/\S+', '', filename)
-
-    # Remove unwanted characters but keep _ . - ( ) letters and numbers
-    filename = re.sub(r'[^\w\s.\-()_]', '', filename)
-    filename = re.sub(r'\s{2,}', ' ', filename).strip()
-
-    filename = filename.replace("___KEEP__USERNAME___", keep_username)
-    return filename
+def transform_alphabet(text: str) -> str:
+    result = ""
+    for char in text:
+        if char.upper() in alphabet_map:
+            result += alphabet_map[char.upper()]
+        else:
+            result += char
+    return result
 
 # ================== Caption Builder ==================
 def generate_caption(file_name, file_size):
-    cleaned_name = clean_filename(file_name)
-    return f"""{cleaned_name}
+    transformed = transform_alphabet(file_name)
+    return f"""{transformed}
 ⚙️ 𝚂𝚒𝚣𝚎 ~ [{file_size}]
 ⚜️ 𝙿𝚘𝚜𝚝 𝚋𝚢 ~ 𝐌𝐎𝐕𝐈𝐄 𝐓𝐀𝐋𝐊
 
@@ -107,10 +59,10 @@ def log(msg):
 # ================== Bot Setup ==================
 bot = Client("kill_me_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-# ================== Commands (PM Only) ==================
+# ================== Commands ==================
 @bot.on_message(filters.private & filters.command("start"))
 async def start_cmd(_, message: Message):
-    await message.reply("👋 Bot is alive! Mentions cleaner + auto caption is running.")
+    await message.reply("👋 Bot is alive! Alphabet transformer is running.")
 
 @bot.on_message(filters.private & filters.command("help"))
 async def help_cmd(_, message: Message):
@@ -121,48 +73,33 @@ async def help_cmd(_, message: Message):
         "📬 Need Help? [𝐇𝐞𝐥𝐩 𝐨𝐫 𝐑𝐞𝐩𝐨𝐫𝐭 𝐛𝐨𝐭](http://t.me/Fedbk_rep_bot)",
         disable_web_page_preview=False
     )
-    
-# ================== Clean text messages ==================
-@bot.on_message(filters.channel & ~filters.me & filters.text)
-async def clean_text_msg(_, message: Message):
-    cleaned = clean_filename(message.text)
-    if cleaned != message.text:
-        try:
-            await message.edit_text(cleaned)
-            log("Text edited.")
-        except Exception as e:
-            log(f"Text edit failed: {e}")
 
-# ================== Clean media captions ==================
-@bot.on_message(filters.channel & ~filters.me & (filters.video | filters.document | filters.audio | filters.photo))
-async def clean_caption(_, message: Message):
+# ================== Caption Transformer ==================
+@bot.on_message(filters.channel & ~filters.me & (filters.video | filters.document | filters.audio))
+async def transform_caption(_, message: Message):
     media = message.document or message.video or message.audio
-    original_caption = message.caption or ""
+    if not media or not media.file_name:
+        return
 
-    if media and media.file_name:
-        file_name = media.file_name
-        file_size = naturalsize(media.file_size)
-        caption = generate_caption(file_name, file_size)
-        log(f"Auto caption ready for: {file_name}")
-    else:
-        caption = clean_filename(original_caption)
-        log("Original caption cleaned.")
+    file_name = media.file_name
+    file_size = naturalsize(media.file_size)
+    caption = generate_caption(file_name, file_size)
 
     try:
         await message.copy(chat_id=message.chat.id, caption=caption)
         await message.delete()
-        log("Media reposted with new caption.")
+        log(f"✅ Caption transformed and reposted: {file_name}")
     except FloodWait as e:
-        log(f"FloodWait: Sleeping for {e.value} seconds...")
+        log(f"⏳ FloodWait: Waiting for {e.value} seconds...")
         await asyncio.sleep(e.value)
         try:
             await message.copy(chat_id=message.chat.id, caption=caption)
             await message.delete()
-            log("Media reposted after wait.")
-        except Exception as e2:
-            log(f"Retry failed: {e2}")
+            log("✅ Reposted after wait.")
+        except Exception as err:
+            log(f"❌ Retry failed: {err}")
     except Exception as e:
-        log(f"Failed to update media: {e}")
+        log(f"❌ Failed to repost: {e}")
 
 # ================== Run ==================
 bot.run()
